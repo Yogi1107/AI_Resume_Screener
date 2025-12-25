@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Screener</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .form-label svg {
+            margin-right: 0.5rem;
+        }
+
+        .file-upload {
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f7fafc;
+        }
+
+        .file-upload:hover {
+            border-color: #667eea;
+            background: #edf2f7;
+        }
+
+        .file-upload.active {
+            border-color: #667eea;
+            background: #e6f2ff;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-upload-text {
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 150px;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .error {
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .results-header h2 {
+            color: #2d3748;
+            font-size: 1.75rem;
+        }
+
+        .candidate-info {
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .candidate-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 1rem;
+        }
+
+        .score-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            border: 2px solid;
+            font-weight: 600;
+        }
+
+        .score-badge.high {
+            background: #f0fdf4;
+            border-color: #86efac;
+            color: #166534;
+        }
+
+        .score-badge.medium {
+            background: #fefce8;
+            border-color: #fde047;
+            color: #854d0e;
+        }
+
+        .score-badge.low {
+            background: #fef2f2;
+            border-color: #fca5a5;
+            color: #991b1b;
+        }
+
+        .score-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .recommendation {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .recommendation-icon {
+            flex-shrink: 0;
+            margin-top: 0.25rem;
+        }
+
+        .recommendation h4 {
+            font-size: 1.1rem;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+
+        .recommendation-status {
+            font-weight: 600;
+        }
+
+        .recommendation-status.interview {
+            color: #16a34a;
+        }
+
+        .recommendation-status.reject {
+            color: #dc2626;
+        }
+
+        .recommendation p {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .section {
+            margin-bottom: 2rem;
+        }
+
+        .section h4 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+            color: #2d3748;
+            margin-bottom: 1rem;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .list-item .icon {
+            flex-shrink: 0;
+            margin-top: 0.25rem;
+            font-weight: bold;
+        }
+
+        .list-item.strength .icon {
+            color: #16a34a;
+        }
+
+        .list-item.missing .icon {
+            color: #dc2626;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Icons using Unicode */
+        .icon-upload::before { content: "📤"; }
+        .icon-file::before { content: "📄"; }
+        .icon-briefcase::before { content: "💼"; }
+        .icon-check::before { content: "✓"; }
+        .icon-x::before { content: "✗"; }
+        .icon-alert::before { content: "⚠"; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AI Resume Screener</h1>
+            <p>Upload a resume and job description to get instant AI-powered analysis</p>
+        </div>
+
+        <div class="card">
+            <div class="form-group">
+                <label class="form-label">
+                    <span class="icon-file"></span>
+                    Upload Resume (PDF)
+                </label>
+                <div class="file-upload" id="fileUpload">
+                    <input type="file" id="resumeFile" class="file-input" accept=".pdf">
+                    <div class="file-upload-text">
+                        <span class="icon-upload"></span>
+                        <span id="fileUploadText">Choose a PDF file</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="jobDescription">
+                    <span class="icon-briefcase"></span>
+                    Job Description
+                </label>
+                <textarea 
+                    id="jobDescription" 
+                    placeholder="Paste the job description here..."
+                ></textarea>
+            </div>
+
+            <div id="errorMessage" class="error hidden">
+                <span class="icon-alert"></span>
+                <span id="errorText"></span>
+            </div>
+
+            <button class="btn" id="submitBtn">
+                <span id="btnText">Screen Resume</span>
+            </button>
+        </div>
+
+        <div class="card results" id="results">
+            <div class="results-header">
+                <span class="icon-check" style="font-size: 1.5rem; color: #16a34a;"></span>
+                <h2>Screening Report</h2>
+            </div>
+
+            <div class="candidate-info">
+                <div class="candidate-name" id="candidateName">Unknown Candidate</div>
+                <div class="score-badge" id="scoreBadge">
+                    <span style="font-size: 0.9rem;">Match Score:</span>
+                    <span class="score-value" id="scoreValue">0/100</span>
+                </div>
+            </div>
+
+            <div class="recommendation">
+                <div class="recommendation-icon" id="recommendationIcon"></div>
+                <div>
+                    <h4>
+                        Recommendation: 
+                        <span class="recommendation-status" id="recommendationStatus"></span>
+                    </h4>
+                    <p id="reasoning"></p>
+                </div>
+            </div>
+
+            <div class="section" id="strengthsSection">
+                <h4>
+                    <span class="icon-check" style="color: #16a34a;"></span>
+                    Key Strengths
+                </h4>
+                <div id="strengthsList"></div>
+            </div>
+
+            <div class="section" id="missingSection">
+                <h4>
+                    <span class="icon-x" style="color: #dc2626;"></span>
+                    Missing Critical Skills
+                </h4>
+                <div id="missingList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileUpload = document.getElementById('fileUpload');
+        const fileInput = document.getElementById('resumeFile');
+        const fileUploadText = document.getElementById('fileUploadText');
+        const jobDescription = document.getElementById('jobDescription');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const results = document.getElementById('results');
+
+        let selectedFile = null;
+
+        // File upload handling
+        fileUpload.addEventListener('click', () => fileInput.click());
+
+        fileUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUpload.classList.add('active');
+        });
+
+        fileUpload.addEventListener('dragleave', () => {
+            fileUpload.classList.remove('active');
+        });
+
+        fileUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUpload.classList.remove('active');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            if (file.type === 'application/pdf') {
+                selectedFile = file;
+                fileUploadText.textContent = file.name;
+                hideError();
+            } else {
+                showError('Please upload a valid PDF file');
+                selectedFile = null;
+            }
+        }
+
+        // Form submission
+        submitBtn.addEventListener('click', async () => {
+            if (!selectedFile || !jobDescription.value.trim()) {
+                showError('Please provide both resume and job description');
+                return;
+            }
+
+            await screenResume();
+        });
+
+        async function screenResume() {
+            setLoading(true);
+            hideError();
+            results.classList.remove('show');
+
+            const formData = new FormData();
+            formData.append('resume', selectedFile);
+            formData.append('job_description', jobDescription.value);
+
+            try {
+                const response = await fetch('http://localhost:5000/screen', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to screen resume');
+                }
+
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                showError(error.message || 'An error occurred while screening the resume');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function displayResults(data) {
+            // Candidate name
+            document.getElementById('candidateName').textContent = 
+                data.candidate_name || 'Unknown Candidate';
+
+            // Score
+            const score = data.match_score || 0;
+            document.getElementById('scoreValue').textContent = `${score}/100`;
+            
+            const scoreBadge = document.getElementById('scoreBadge');
+            scoreBadge.className = 'score-badge';
+            if (score >= 70) scoreBadge.classList.add('high');
+            else if (score >= 50) scoreBadge.classList.add('medium');
+            else scoreBadge.classList.add('low');
+
+            // Recommendation
+            const recommendation = data.recommendation || 'Unknown';
+            const recommendationStatus = document.getElementById('recommendationStatus');
+            recommendationStatus.textContent = recommendation;
+            recommendationStatus.className = 'recommendation-status';
+            recommendationStatus.classList.add(recommendation === 'Interview' ? 'interview' : 'reject');
+
+            const recommendationIcon = document.getElementById('recommendationIcon');
+            recommendationIcon.innerHTML = recommendation === 'Interview' 
+                ? '<span style="font-size: 1.5rem; color: #16a34a;">✓</span>'
+                : '<span style="font-size: 1.5rem; color: #dc2626;">✗</span>';
+
+            document.getElementById('reasoning').textContent = data.reasoning || '';
+
+            // Key Strengths
+            const strengthsList = document.getElementById('strengthsList');
+            strengthsList.innerHTML = '';
+            if (data.key_strengths && data.key_strengths.length > 0) {
+                data.key_strengths.forEach(strength => {
+                    const item = document.createElement('div');
+                    item.className = 'list-item strength';
+                    item.innerHTML = `
+                        <span class="icon">✓</span>
+                        <span>${strength}</span>
+                    `;
+                    strengthsList.appendChild(item);
+                });
+            }
+
+            // Missing Skills
+            const missingList = document.getElementById('missingList');
+            missingList.innerHTML = '';
+            if (data.missing_critical_skills && data.missing_critical_skills.length > 0) {
+                data.missing_critical_skills.forEach(skill => {
+                    const item = document.createElement('div');
+                    item.className = 'list-item missing';
+                    item.innerHTML = `
+                        <span class="icon">✗</span>
+                        <span>${skill}</span>
+                    `;
+                    missingList.appendChild(item);
+                });
+            }
+
+            // Show results
+            results.classList.add('show');
+            results.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function setLoading(isLoading) {
+            submitBtn.disabled = isLoading;
+            if (isLoading) {
+                btnText.innerHTML = '<div class="spinner"></div> Analyzing Resume...';
+            } else {
+                btnText.textContent = 'Screen Resume';
+            }
+        }
+
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+
+        function hideError() {
+            errorMessage.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
