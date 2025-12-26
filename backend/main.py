@@ -9,7 +9,9 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend communication
 
 # Ollama client setup
-client = Client(host="http://localhost:11434")
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+client = Client(host=OLLAMA_HOST)
+
 
 # ------------------------------- 
 # PDF TEXT EXTRACTION 

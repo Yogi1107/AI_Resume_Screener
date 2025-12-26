@@ -28,7 +28,10 @@ descriptions and providing structured hiring insights similar to an ATS.
 
 -   Frontend: HTML, CSS, JavaScript
 -   Backend: Python, Flask
--   AI: Ollama (LLaMA 3.2)
+-   AI / LLM
+    - Ollama (Dockerized)
+    - LLaMA 3.2 (pulled at runtime)
+    - Prompt Engineering
 -   PDF Parsing: PyMuPDF
 
 ------------------------------------------------------------------------
@@ -37,6 +40,56 @@ descriptions and providing structured hiring insights similar to an ATS.
 
 ai-resume-screener/ ├── backend/ │ ├── app.py │ ├── requirements.txt ├──
 frontend/ │ └── index.html └── README.md
+
+------------------------------------------------------------------------
+
+## 🐳 Run Using Docker (Recommended)
+
+### Prerequisites
+- Docker
+- Docker Compose
+
+---
+
+### Step 1: Clone Repository
+```bash
+git clone https://github.com/your-username/ai-resume-screener.git
+cd ai-resume-screener
+```
+
+### Step 2: Start Services
+```bash
+docker-compose up --build
+```
+
+This will:
+    - Start Ollama container
+    - Pull LLaMA 3.2 model
+    - Start Flask backend
+
+### Step 3: Pull Model (First Time Only)
+```bash
+docker exec -it ollama ollama pull llama3.2:3b
+```
+
+### Step 4: Access Application
+    
+    - Backend: http://localhost:5000
+    - Health check: http://localhost:5000/health
+    - Frontend: open frontend/index.html
+
+---
+
+------------------------------------------------------------------------
+
+## 📦 What is NOT Included in the Repository
+
+- Ollama model files (pulled at runtime)
+- Docker images
+- Virtual environments
+- Environment secrets
+
+This keeps the repository lightweight and secure.
 
 ------------------------------------------------------------------------
 
