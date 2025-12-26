@@ -38,8 +38,17 @@ descriptions and providing structured hiring insights similar to an ATS.
 
 ## 📂 Project Structure
 
-ai-resume-screener/ ├── backend/ │ ├── app.py │ ├── requirements.txt ├──
-frontend/ │ └── index.html └── README.md
+```
+ai-resume-screener/ 
+├── backend/ │ 
+    ├── app.py │ 
+    ├── requirements.txt 
+    ├── DockerFile
+├── frontend/ │ 
+    └── index.html 
+├── README.md
+├── docker-compose.yml
+```
 
 ------------------------------------------------------------------------
 
