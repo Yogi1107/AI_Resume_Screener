@@ -1,23 +1,37 @@
 version: "3.9"
 
 services:
+  api:
+    container_name: resume-api
+    build: .
+    ports:
+      - "5000:5000"
+    depends_on:
+      - valkey
+      - ollama
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - VALKEY_HOST=valkey
+      - VALKEY_PORT=6379
+      - CACHE_TTL=86400
+    command: uvicorn main:app --host 0.0.0.0 --port 5000
+    restart: always
+
+  valkey:
+    image: valkey/valkey:latest
+    container_name: valkey
+    ports:
+      - "6379:6379"
+    restart: always
+
   ollama:
-    image: ollama/ollama
+    image: ollama/ollama:latest
     container_name: ollama
     ports:
       - "11434:11434"
     volumes:
-      - ollama_data:/root/.ollama
-
-  backend:
-    build: ./backend
-    container_name: resume-backend
-    ports:
-      - "5000:5000"
-    depends_on:
-      - ollama
-    environment:
-      - OLLAMA_HOST=http://ollama:11434
+      - ollama:/root/.ollama
+    restart: always
 
 volumes:
-  ollama_data:
+  ollama:
