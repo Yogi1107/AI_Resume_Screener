@@ -2,6 +2,8 @@
 
 An intelligent resume screening API built with **FastAPI**, **Groq LLM**, and **Valkey/Redis** caching. Upload a PDF resume and a job description — get back a structured JSON analysis with match score, strengths, gaps, and a hire/reject recommendation in seconds.
 
+Deployed Link :- https://llm-resume-screener.streamlit.app/
+
 ---
 
 ## ✨ Features
