@@ -8,9 +8,9 @@ services:
       - "5000:5000"
     depends_on:
       - valkey
-      - ollama
+    env_file:
+      - .env
     environment:
-      - OLLAMA_HOST=http://ollama:11434
       - VALKEY_HOST=valkey
       - VALKEY_PORT=6379
       - CACHE_TTL=86400
@@ -23,15 +23,3 @@ services:
     ports:
       - "6379:6379"
     restart: always
-
-  ollama:
-    image: ollama/ollama:latest
-    container_name: ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama:/root/.ollama
-    restart: always
-
-volumes:
-  ollama:
