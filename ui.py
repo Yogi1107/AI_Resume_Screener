@@ -1,11 +1,11 @@
 import streamlit as st
 import requests
+import os
 
-# ======================================================
-# CONFIG
-# ======================================================
-
-API_URL = "http://localhost:5000/screen"
+try:
+    API_URL = st.secrets["API_URL"]
+except:
+    API_URL = os.getenv("API_URL", "http://localhost:5000")
 
 st.set_page_config(
     page_title="AI Resume Screener",
@@ -17,7 +17,7 @@ st.set_page_config(
 # ======================================================
 
 st.title("🤖 AI Resume Screener")
-st.caption("FastAPI + Valkey + Ollama (Local LLM)")
+st.caption("FastAPI + Redis/Valkey + Groq")
 
 st.markdown(
     """
@@ -25,6 +25,16 @@ Upload a **resume PDF** and paste the **job description**.
 The system evaluates the candidate using a local LLM with caching.
 """
 )
+
+try:
+    health = requests.get(f"{API_URL}/health", timeout=10)
+except:
+    health = None
+    
+if health and health.status_code == 200:
+    st.sidebar.success("Backend Connected")
+else:
+    st.sidebar.error("Backend Offline")
 
 # ======================================================
 # INPUTS
@@ -52,7 +62,7 @@ if st.button("🔍 Screen Resume"):
         with st.spinner("Analyzing resume..."):
             try:
                 response = requests.post(
-                    API_URL,
+                    f"{API_URL}/screen",
                     files={"resume": resume_file},
                     data={"job_description": job_description},
                     timeout=600
@@ -113,4 +123,4 @@ if st.button("🔍 Screen Resume"):
 # ======================================================
 
 st.markdown("---")
-st.caption("Built with ❤️ using FastAPI, Valkey, Ollama & Streamlit")
+st.caption("Built with ❤️ using FastAPI, Groq, Redis/Valkey & Streamlit")
